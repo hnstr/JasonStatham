@@ -43,7 +43,7 @@ public class DefaultDriverAlgorithm extends AbstractAlgorithm {
     public static void main(String[] args) {
 
         //Set path to torcs.properties
-        TorcsConfiguration.getInstance().initialize(new File("torcs.properties"));
+        TorcsConfiguration.getInstance().initialize(new File("torcs_template/torcs.properties"));
         /*
 		 *
 		 * Start without arguments to run the algorithm
