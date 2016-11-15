@@ -52,7 +52,7 @@ public class DefaultDriver extends AbstractDriver {
 
     @Override
     public String getDriverName() {
-        return "Example Controller";
+        return "Jason Statham";
     }
 
     @Override
@@ -79,11 +79,8 @@ public class DefaultDriver extends AbstractDriver {
             action = new Action();
         }
 
-        float targetAngle = (float)(sensors.getAngleToTrackAxis() - sensors.getTrackPosition());
-
         action.steering = DriversUtils.alignToTrackAxis(sensors, 0.25);
         action.steering += DriversUtils.moveTowardsTrackPosition(sensors, 0.25, -sensors.getTrackPosition());
-        System.out.println("Steering: " + sensors.getOpponentSensors()[0]);
 
         float targetSpeed = 200.0F;
         if(Math.abs(sensors.getTrackPosition()) < 1.0D) {
@@ -92,20 +89,18 @@ public class DefaultDriver extends AbstractDriver {
             float sxSensor = (float)sensors.getTrackEdgeSensors()[8];
 
             if(sensorsensor <= 70.0F && (sensorsensor < rxSensor || sensorsensor < sxSensor)) {
-                float h;
+                float h = sensorsensor * 0.08716F;
                 float b;
                 float sinAngle;
+
                 if(rxSensor > sxSensor) {
-                    h = sensorsensor * 0.08716F;
                     b = rxSensor - sensorsensor * 0.99619F;
-                    sinAngle = b * b / (h * h + b * b);
-                    targetSpeed = targetSpeed * (sensorsensor * sinAngle / 50.0F);
                 } else {
-                    h = sensorsensor * 0.08716F;
                     b = sxSensor - sensorsensor * 0.99619F;
-                    sinAngle = b * b / (h * h + b * b);
-                    targetSpeed = targetSpeed * (sensorsensor * sinAngle / 50.0F);
                 }
+
+                sinAngle = b * b / (h * h + b * b);
+                targetSpeed = targetSpeed * (sensorsensor * sinAngle / 50.0F);
             } else {
                 targetSpeed = 200.0F;
             }
