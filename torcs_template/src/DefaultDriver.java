@@ -83,9 +83,9 @@ public class DefaultDriver extends AbstractDriver {
 
         action.steering = DriversUtils.alignToTrackAxis(sensors, 0.25);
         action.steering += DriversUtils.moveTowardsTrackPosition(sensors, 0.25, -sensors.getTrackPosition());
+        System.out.println("Steering: " + sensors.getOpponentSensors()[0]);
 
-
-        float targetSpeed = 150.0F;
+        float targetSpeed = 200.0F;
         if(Math.abs(sensors.getTrackPosition()) < 1.0D) {
             float rxSensor = (float)sensors.getTrackEdgeSensors()[10];
             float sensorsensor = (float)sensors.getTrackEdgeSensors()[9];
@@ -99,12 +99,12 @@ public class DefaultDriver extends AbstractDriver {
                     h = sensorsensor * 0.08716F;
                     b = rxSensor - sensorsensor * 0.99619F;
                     sinAngle = b * b / (h * h + b * b);
-                    targetSpeed = targetSpeed * (sensorsensor * sinAngle / 40.0F);
+                    targetSpeed = targetSpeed * (sensorsensor * sinAngle / 50.0F);
                 } else {
                     h = sensorsensor * 0.08716F;
                     b = sxSensor - sensorsensor * 0.99619F;
                     sinAngle = b * b / (h * h + b * b);
-                    targetSpeed = targetSpeed * (sensorsensor * sinAngle / 40.0F);
+                    targetSpeed = targetSpeed * (sensorsensor * sinAngle / 50.0F);
                 }
             } else {
                 targetSpeed = 200.0F;
