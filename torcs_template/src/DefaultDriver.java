@@ -74,15 +74,29 @@ public class DefaultDriver extends AbstractDriver {
     }
 
     @Override
+    public float[] initAngles() {
+        float[] angles = new float[19];
+
+        for(int i = 0; i < 19; ++i) {
+            angles[i] = (float)(-90 + i * 10);
+        }
+
+        angles[8] = -1.0F;
+        angles[10] = 1.0F;
+
+        return angles;
+    }
+
+    @Override
     public Action defaultControl(Action action, SensorModel sensors) {
         if (action == null) {
             action = new Action();
         }
 
-        action.steering = DriversUtils.alignToTrackAxis(sensors, 0.25);
-        action.steering += DriversUtils.moveTowardsTrackPosition(sensors, 0.25, -sensors.getTrackPosition());
+        action.steering = DriversUtils.alignToTrackAxis(sensors, 0.5);
+        action.steering += DriversUtils.moveTowardsTrackPosition(sensors, 0.5, -sensors.getTrackPosition());
 
-        float targetSpeed = 200.0F;
+        float targetSpeed = 210.0F;
         if(Math.abs(sensors.getTrackPosition()) < 1.0D) {
             float rxSensor = (float)sensors.getTrackEdgeSensors()[10];
             float sensorsensor = (float)sensors.getTrackEdgeSensors()[9];
@@ -100,14 +114,20 @@ public class DefaultDriver extends AbstractDriver {
                 }
 
                 sinAngle = b * b / (h * h + b * b);
-                targetSpeed = targetSpeed * (sensorsensor * sinAngle / 50.0F);
+                targetSpeed = targetSpeed * (sensorsensor * sinAngle / 15.4F);
+                if (targetSpeed < 100.0F) {
+                    targetSpeed = 100.0F;
+                } else if (targetSpeed > 215.0F) {
+                    targetSpeed = 350.0F;
+                }
             } else {
-                targetSpeed = 200.0F;
+                // 230 => no penalty, 234 => fastest time with penalty
+                targetSpeed = 230.0F;
             }
 
             action.accelerate = (float)(2.0D / (1.0D + Math.exp(sensors.getSpeed() - (double)targetSpeed)) - 1.0D);
         } else {
-            action.accelerate = 0.3F;
+            action.accelerate = 0.4F;
         }
 
         if(action.accelerate > 0.01F) {
