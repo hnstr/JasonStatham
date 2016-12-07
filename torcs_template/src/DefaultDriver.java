@@ -106,8 +106,6 @@ public class DefaultDriver extends AbstractDriver {
 
         double moveTo = sensors.getTrackPosition();
 
-        System.out.println(sensors.getLaps());
-
         // learning lap
         if (sensors.getLaps() < 1) {
             sensor_data.add(sens_arr);
@@ -125,7 +123,7 @@ public class DefaultDriver extends AbstractDriver {
         else {
             double[] net_out = neuralNetwork.getOutput(sens_arr);
             moveTo = net_out[0];
-            moveTo = sensors.getTrackPosition();
+            //moveTo = sensors.getTrackPosition();
         }
         System.out.println(moveTo);
         System.out.println(sensor_data.size());
@@ -161,13 +159,14 @@ public class DefaultDriver extends AbstractDriver {
                     targetSpeed = 350.0F;
                 }
             } else {
-                // standaard snelheid
+                // standaard maximum snelheid
                 // 230 => no penalty, 234 => fastest time with penalty
                 targetSpeed = 230.0F;
             }
 
             action.accelerate = (float)(2.0D / (1.0D + Math.exp(sensors.getSpeed() - (double)targetSpeed)) - 1.0D);
         } else {
+            // als de auto van track af raakt.
             action.accelerate = 0.4F;
         }
 
