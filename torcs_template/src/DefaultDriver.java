@@ -7,18 +7,23 @@ import cicontest.torcs.controller.extras.AutomatedRecovering;
 import cicontest.torcs.genome.IGenome;
 import scr.Action;
 import scr.SensorModel;
-import scr.SimpleDriver;
 
-import java.sql.DriverManager;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DefaultDriver extends AbstractDriver {
 
-    private NeuralNetwork neuralNetwork;
+    private NeuralNet neuralNetwork;
+    List<double[]> sensor_data = new ArrayList<>();
+    List<double[]> track_data = new ArrayList<>();
+    boolean loaded = false;
 
     public DefaultDriver() {
         initialize();
-        neuralNetwork = new NeuralNetwork(12, 8, 2);
+        neuralNetwork = new NeuralNet(3, 0, 1);
+        neuralNetwork.load(new double[]{0.0,0.0,0.0}, 0.0);
 //        neuralNetwork = neuralNetwork.loadGenome();
+
     }
 
     private void initialize() {
@@ -40,13 +45,13 @@ public class DefaultDriver extends AbstractDriver {
     @Override
     public double getAcceleration(SensorModel sensors) {
         double[] sensorArray = new double[4];
-        double output = neuralNetwork.getOutput(sensors);
+        //double[] output = neuralNetwork.getOutput(sensors);
         return 1;
     }
 
     @Override
     public double getSteering(SensorModel sensors) {
-        Double output = neuralNetwork.getOutput(sensors);
+        //double[] output = neuralNetwork.getOutput(sensors);
         return 0.5;
     }
 
@@ -93,9 +98,42 @@ public class DefaultDriver extends AbstractDriver {
             action = new Action();
         }
 
-        action.steering = DriversUtils.alignToTrackAxis(sensors, 0.5);
-        action.steering += DriversUtils.moveTowardsTrackPosition(sensors, 0.5, -sensors.getTrackPosition());
+        double[] sens_arr = new double[]{
+                sensors.getTrackEdgeSensors()[8],
+                sensors.getTrackEdgeSensors()[9],
+                sensors.getTrackEdgeSensors()[10]
+        };
 
+        double moveTo = sensors.getTrackPosition();
+
+        System.out.println(sensors.getLaps());
+
+        // learning lap
+        if (sensors.getLaps() < 1) {
+            sensor_data.add(sens_arr);
+            track_data.add(new double[]{moveTo});
+        }
+        // learn
+        else if (!loaded) {
+            for (int i = 0; i < sensor_data.size(); i++) {
+                neuralNetwork.load(sensor_data.get(i), track_data.get(i)[0]);
+            }
+            neuralNetwork.learn();
+            loaded = !loaded;
+        }
+        // use learned data
+        else {
+            double[] net_out = neuralNetwork.getOutput(sens_arr);
+            moveTo = net_out[0];
+            moveTo = sensors.getTrackPosition();
+        }
+        System.out.println(moveTo);
+        System.out.println(sensor_data.size());
+
+        action.steering = DriversUtils.alignToTrackAxis(sensors, 0.5);
+        action.steering += DriversUtils.moveTowardsTrackPosition(sensors, 0.5, -moveTo);
+
+        // target speed voor bochten. Zit hier maar niet aan..
         float targetSpeed = 210.0F;
         if(Math.abs(sensors.getTrackPosition()) < 1.0D) {
             float rxSensor = (float)sensors.getTrackEdgeSensors()[10];
@@ -116,11 +154,14 @@ public class DefaultDriver extends AbstractDriver {
                 sinAngle = b * b / (h * h + b * b);
                 targetSpeed = targetSpeed * (sensorsensor * sinAngle / 15.4F);
                 if (targetSpeed < 100.0F) {
+                    // minimum snelheid
                     targetSpeed = 100.0F;
                 } else if (targetSpeed > 215.0F) {
+                    // snelheid in bochten als hij merkt dat hij wel harder de bocht door kan.
                     targetSpeed = 350.0F;
                 }
             } else {
+                // standaard snelheid
                 // 230 => no penalty, 234 => fastest time with penalty
                 targetSpeed = 230.0F;
             }

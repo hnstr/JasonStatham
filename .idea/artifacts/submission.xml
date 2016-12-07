@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="submission">
+    <output-path>$PROJECT_DIR$/out/production/torcs_template</output-path>
+    <root id="archive" name="submission.jar">
+      <element id="module-output" name="torcs_template" />
+      <element id="file-copy" path="$PROJECT_DIR$/torcs_template/lib/cicontest.jar" />
+    </root>
+  </artifact>
+</component>

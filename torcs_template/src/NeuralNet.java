@@ -1,16 +1,32 @@
 import scr.SensorModel;
-
+import org.neuroph.nnet.Adaline;
+import org.neuroph.core.data.DataSet;
+import org.neuroph.core.data.DataSetRow;
 import java.io.*;
 
-public class NeuralNetwork implements Serializable {
+public class NeuralNet implements Serializable {
 
     private static final long serialVersionUID = -88L;
+    Adaline net;
+    DataSet data;
 
-    NeuralNetwork(int inputs, int hidden, int outputs) {
+    NeuralNet(int inputs, int hidden, int outputs) {
+        net = new Adaline(inputs);
+        data = new DataSet(inputs, outputs);
     }
 
-    public double getOutput(SensorModel a) {
-        return 0.5;
+    public void load(double[] sense, double track) {
+        data.addRow(new DataSetRow(sense, new double[]{track}));
+    }
+
+    public void learn() {
+        net.learn(data);
+    }
+
+    public double[] getOutput(double[] sense) {
+        net.setInput(sense);
+        net.calculate();
+        return net.getOutput();
     }
 
     //Store the state of this neural network
@@ -32,7 +48,7 @@ public class NeuralNetwork implements Serializable {
     }
 
     // Load a neural network from memory
-    public NeuralNetwork loadGenome() {
+    public NeuralNet loadGenome() {
 
         // Read from disk using FileInputStream
         FileInputStream f_in = null;
@@ -53,7 +69,7 @@ public class NeuralNetwork implements Serializable {
         // Read an object
         try {
             if (obj_in != null) {
-                return (NeuralNetwork) obj_in.readObject();
+                return (NeuralNet) obj_in.readObject();
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
