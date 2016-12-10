@@ -17,12 +17,14 @@ public class DefaultDriver extends AbstractDriver {
     List<double[]> sensor_data = new ArrayList<>();
     List<double[]> track_data = new ArrayList<>();
     boolean loaded = false;
+    boolean learning = !true;
 
     public DefaultDriver() {
         initialize();
-        neuralNetwork = new NeuralNet(3, 0, 1);
-        neuralNetwork.load(new double[]{0.0,0.0,0.0}, 0.0);
-//        neuralNetwork = neuralNetwork.loadGenome();
+        neuralNetwork = new NeuralNet(2, 4, 2);
+        if (!learning) {
+            neuralNetwork = neuralNetwork.loadGenome();
+        }
 
     }
 
@@ -98,25 +100,36 @@ public class DefaultDriver extends AbstractDriver {
             action = new Action();
         }
 
+        double right = 0.0;
+        if(sensors.getTrackPosition() > 0) {
+            right = 1.0;
+        }
         double[] sens_arr = new double[]{
-                sensors.getTrackEdgeSensors()[8],
-                sensors.getTrackEdgeSensors()[9],
-                sensors.getTrackEdgeSensors()[10]
+                sensors.getTrackPosition(),
+                right
+//                sensors.getTrackEdgeSensors()[8],
+//                sensors.getTrackEdgeSensors()[9],
+//                sensors.getTrackEdgeSensors()[10]
         };
 
         double moveTo = sensors.getTrackPosition();
 
         // learning lap
-        if (sensors.getLaps() < 1) {
+        if (sensors.getLaps() < 1 && learning) {
             sensor_data.add(sens_arr);
-            track_data.add(new double[]{moveTo});
+            track_data.add(new double[]{moveTo, right});
         }
-        // learn
-        else if (!loaded) {
+//        // learn
+        else if (!loaded && learning) {
+            System.out.println("Loading...");
             for (int i = 0; i < sensor_data.size(); i++) {
-                neuralNetwork.load(sensor_data.get(i), track_data.get(i)[0]);
+                neuralNetwork.load(sensor_data.get(i), track_data.get(i));
             }
+            System.out.println("Learning...");
             neuralNetwork.learn();
+
+            System.out.println("Storing...");
+            neuralNetwork.storeGenome();
             loaded = !loaded;
         }
         // use learned data
@@ -125,11 +138,18 @@ public class DefaultDriver extends AbstractDriver {
             moveTo = net_out[0];
             //moveTo = sensors.getTrackPosition();
         }
-        System.out.println(moveTo);
-        System.out.println(sensor_data.size());
 
-        action.steering = DriversUtils.alignToTrackAxis(sensors, 0.5);
-        action.steering += DriversUtils.moveTowardsTrackPosition(sensors, 0.5, -moveTo);
+        System.out.println(sensors.getTrackPosition());
+        System.out.println(moveTo);
+
+        if (learning) {
+            action.steering = DriversUtils.alignToTrackAxis(sensors, 0.5);
+            action.steering += DriversUtils.moveTowardsTrackPosition(sensors, 0.5, -sensors.getTrackPosition());
+        }else{
+            action.steering = DriversUtils.alignToTrackAxis(sensors, 0.05);
+            action.steering += DriversUtils.moveTowardsTrackPosition(sensors, 0.1, -moveTo);
+        }
+
 
         // target speed voor bochten. Zit hier maar niet aan..
         float targetSpeed = 210.0F;

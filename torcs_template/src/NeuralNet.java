@@ -1,80 +1,54 @@
-import scr.SensorModel;
+import org.neuroph.core.learning.LearningRule;
 import org.neuroph.nnet.Adaline;
+import org.neuroph.nnet.Perceptron;
+import scr.SensorModel;
+import org.neuroph.nnet.MultiLayerPerceptron;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
 import java.io.*;
+import java.util.Arrays;
+import org.neuroph.util.TransferFunctionType;
+import org.neuroph.nnet.learning.BackPropagation;
 
 public class NeuralNet implements Serializable {
 
     private static final long serialVersionUID = -88L;
-    Adaline net;
+    MultiLayerPerceptron net;
     DataSet data;
 
     NeuralNet(int inputs, int hidden, int outputs) {
-        net = new Adaline(inputs);
+        net = new MultiLayerPerceptron(TransferFunctionType.LINEAR, inputs, hidden, outputs);
         data = new DataSet(inputs, outputs);
     }
 
-    public void load(double[] sense, double track) {
-        data.addRow(new DataSetRow(sense, new double[]{track}));
+    public void load(double[] sense, double[] result) {
+        data.addRow(new DataSetRow(sense, result));
     }
 
     public void learn() {
-        net.learn(data);
+        BackPropagation backPropagation = new BackPropagation();
+        backPropagation.setMaxIterations(100);
+        net.learn(data, backPropagation);
     }
 
     public double[] getOutput(double[] sense) {
         net.setInput(sense);
         net.calculate();
-        return net.getOutput();
+        double[] networkOutput = net.getOutput();
+
+        return networkOutput;
     }
 
     //Store the state of this neural network
     public void storeGenome() {
-        ObjectOutputStream out = null;
-        try {
-            //create the memory folder manually
-            out = new ObjectOutputStream(new FileOutputStream("memory/mydriver.mem"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            if (out != null) {
-                out.writeObject(this);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        net.save("torcs_template/src/memory/mydriver.nnet");
     }
 
     // Load a neural network from memory
     public NeuralNet loadGenome() {
 
-        // Read from disk using FileInputStream
-        FileInputStream f_in = null;
-        try {
-            f_in = new FileInputStream("memory/mydriver.mem");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        // Read object using ObjectInputStream
-        ObjectInputStream obj_in = null;
-        try {
-            obj_in = new ObjectInputStream(f_in);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // Read an object
-        try {
-            if (obj_in != null) {
-                return (NeuralNet) obj_in.readObject();
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
+        net.createFromFile("torcs_template/src/memory/mydriver.nnet");
+        return this;
     }
 
 }
