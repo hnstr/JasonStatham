@@ -17,7 +17,7 @@ public class NeuralNet implements Serializable {
     DataSet data;
 
     NeuralNet(int inputs, int hidden, int outputs) {
-        net = new MultiLayerPerceptron(TransferFunctionType.LINEAR, inputs, hidden, outputs);
+        net = new MultiLayerPerceptron(TransferFunctionType.SIGMOID, inputs, hidden, outputs);
         data = new DataSet(inputs, outputs);
     }
 

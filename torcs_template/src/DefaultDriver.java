@@ -21,7 +21,7 @@ public class DefaultDriver extends AbstractDriver {
 
     public DefaultDriver() {
         initialize();
-        neuralNetwork = new NeuralNet(2, 4, 2);
+        neuralNetwork = new NeuralNet(21, 4, 2);
         if (!learning) {
             neuralNetwork = neuralNetwork.loadGenome();
         }
@@ -106,10 +106,26 @@ public class DefaultDriver extends AbstractDriver {
         }
         double[] sens_arr = new double[]{
                 sensors.getTrackPosition(),
-                right
-//                sensors.getTrackEdgeSensors()[8],
-//                sensors.getTrackEdgeSensors()[9],
-//                sensors.getTrackEdgeSensors()[10]
+                right,
+                sensors.getTrackEdgeSensors()[0],
+                sensors.getTrackEdgeSensors()[1],
+                sensors.getTrackEdgeSensors()[2],
+                sensors.getTrackEdgeSensors()[3],
+                sensors.getTrackEdgeSensors()[4],
+                sensors.getTrackEdgeSensors()[5],
+                sensors.getTrackEdgeSensors()[6],
+                sensors.getTrackEdgeSensors()[7],
+                sensors.getTrackEdgeSensors()[8],
+                sensors.getTrackEdgeSensors()[9],
+                sensors.getTrackEdgeSensors()[10],
+                sensors.getTrackEdgeSensors()[11],
+                sensors.getTrackEdgeSensors()[12],
+                sensors.getTrackEdgeSensors()[13],
+                sensors.getTrackEdgeSensors()[14],
+                sensors.getTrackEdgeSensors()[15],
+                sensors.getTrackEdgeSensors()[16],
+                sensors.getTrackEdgeSensors()[17],
+                sensors.getTrackEdgeSensors()[18]
         };
 
         double moveTo = sensors.getTrackPosition();
@@ -142,11 +158,13 @@ public class DefaultDriver extends AbstractDriver {
         System.out.println(sensors.getTrackPosition());
         System.out.println(moveTo);
 
+        // 5:26 sigmoid
+
         if (learning) {
             action.steering = DriversUtils.alignToTrackAxis(sensors, 0.5);
             action.steering += DriversUtils.moveTowardsTrackPosition(sensors, 0.5, -sensors.getTrackPosition());
         }else{
-            action.steering = DriversUtils.alignToTrackAxis(sensors, 0.05);
+            action.steering = DriversUtils.alignToTrackAxis(sensors, 0.1);
             action.steering += DriversUtils.moveTowardsTrackPosition(sensors, 0.1, -moveTo);
         }
 
