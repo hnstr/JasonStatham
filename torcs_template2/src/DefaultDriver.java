@@ -202,7 +202,7 @@ public class DefaultDriver extends AbstractDriver {
         }
 
         // param 3
-        if (action.steering < 0.03F && action.steering > -0.03F) {
+        if (action.steering < 0.02F && action.steering > -0.02F) {
             action.steering = 0.0F;
         } else if (action.steering < 0.1F && action.steering > -0.1F) {
             action.steering = action.steering / 2.0F;
