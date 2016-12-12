@@ -9,6 +9,7 @@ import scr.Action;
 import scr.SensorModel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class DefaultDriver extends AbstractDriver {
@@ -17,7 +18,7 @@ public class DefaultDriver extends AbstractDriver {
     List<double[]> sensor_data = new ArrayList<>();
     List<double[]> track_data = new ArrayList<>();
     boolean loaded = false;
-    boolean learning = !true;
+    boolean learning = true;
 
     public DefaultDriver() {
         initialize();
@@ -131,7 +132,7 @@ public class DefaultDriver extends AbstractDriver {
         double moveTo = sensors.getTrackPosition();
 
         // learning lap
-        if (sensors.getLaps() < 1 && learning) {
+        if (learning) {
             sensor_data.add(sens_arr);
             track_data.add(new double[]{moveTo, right});
         }
@@ -200,6 +201,21 @@ public class DefaultDriver extends AbstractDriver {
                 // standaard maximum snelheid
                 // 230 => no penalty, 234 => fastest time with penalty
                 targetSpeed = 230.0F;
+                double opp0 = sensors.getOpponentSensors()[16];
+                double opp1 = sensors.getOpponentSensors()[17];
+                double opp2 = sensors.getOpponentSensors()[18];
+
+                System.out.println(opp0 + " " + opp1 + " " + opp2 + ", " + sensors.getDistanceRaced());
+                System.out.println(Arrays.toString(sensors.getOpponentSensors()));
+                if (opp1 < 200 || opp0 < 200 || opp2 < 200) {
+                    targetSpeed = 350.0F;
+                }
+                if ((opp0 < 25 || opp1 < 25 || opp2 < 25) && sensors.getDistanceRaced() > 400) {
+                    targetSpeed = (float) sensors.getSpeed() + 1;
+                }
+                if ((opp0 < 10 || opp1 < 10 || opp2 < 10) && sensors.getDistanceRaced() > 800) {
+                    targetSpeed = (float) sensors.getSpeed();
+                }
             }
 
             action.accelerate = (float)(2.0D / (1.0D + Math.exp(sensors.getSpeed() - (double)targetSpeed)) - 1.0D);
