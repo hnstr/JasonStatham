@@ -17,7 +17,7 @@ public class NeuralNet implements Serializable {
     DataSet data;
 
     NeuralNet(int inputs, int hidden, int outputs) {
-        net = new MultiLayerPerceptron(TransferFunctionType.SIGMOID, inputs, hidden, outputs);
+        net = new MultiLayerPerceptron(TransferFunctionType.LINEAR, inputs, hidden, outputs);
         data = new DataSet(inputs, outputs);
     }
 
@@ -41,13 +41,13 @@ public class NeuralNet implements Serializable {
 
     //Store the state of this neural network
     public void storeGenome() {
-        net.save("torcs_template/src/memory/mydriver.nnet");
+        net.save("src/memory/mydriver.nnet");
     }
 
     // Load a neural network from memory
     public NeuralNet loadGenome() {
 
-        net.createFromFile("torcs_template/src/memory/mydriver.nnet");
+        net.createFromFile("src/memory/mydriver.nnet");
         return this;
     }
 
