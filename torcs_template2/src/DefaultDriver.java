@@ -24,6 +24,7 @@ public class DefaultDriver extends AbstractDriver {
     private double[] angles;
     SensorModel sensorModel;
     private double first_corr;
+    private double tot_time;
 
     public DefaultDriver(double[] individual) {
 
@@ -41,6 +42,9 @@ public class DefaultDriver extends AbstractDriver {
         return sensorModel.getLastLapTime();
     }
 
+    double getTotTime() {
+        return sensorModel.getTicks();
+    }
 
     private void initialize() {
         this.enableExtras(new AutomatedClutch());
@@ -114,6 +118,7 @@ public class DefaultDriver extends AbstractDriver {
             action = new Action();
         }
         sensorModel = sensors;
+
         double normalized = (sensors.getTrackPosition() + 0) / 1;
         double[] sens_arr = new double[]{
                 normalized,
