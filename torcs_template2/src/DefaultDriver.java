@@ -15,21 +15,32 @@ import java.util.List;
 public class DefaultDriver extends AbstractDriver {
 
     private NeuralNet neuralNetwork;
-    List<double[]> sensor_data = new ArrayList<>();
-    List<double[]> track_data = new ArrayList<>();
-    boolean loaded = false;
-    boolean learning = !true;
-    boolean first = true;
-    double first_corr;
+    private List<double[]> sensor_data = new ArrayList<>();
+    private List<double[]> track_data = new ArrayList<>();
+    private boolean loaded = false;
+    private boolean learning = !true;
+    private boolean first = true;
+    private DefaultDriverGenome genome = new DefaultDriverGenome();
+    private double[] angles;
+    SensorModel sensorModel;
+    private double first_corr;
 
-    public DefaultDriver() {
+    public DefaultDriver(double[] individual) {
+
+        angles = individual;
+
         initialize();
-        neuralNetwork = new NeuralNet(20, 20, 2);
+        neuralNetwork = new NeuralNet(20, 4, 1);
         if (!learning) {
             neuralNetwork = neuralNetwork.loadGenome();
         }
 
     }
+
+    double getLapTime() {
+        return sensorModel.getLastLapTime();
+    }
+
 
     private void initialize() {
         this.enableExtras(new AutomatedClutch());
@@ -85,16 +96,16 @@ public class DefaultDriver extends AbstractDriver {
 
     @Override
     public float[] initAngles() {
-        float[] angles = new float[19];
+        float[] angles_out = new float[19];
 
-        for(int i = 0; i < 19; ++i) {
-            angles[i] = (float)(-90 + i * 10);
+        for(int i = 0; i < 9; i++) {
+            angles_out[8 - i] = -(float) angles[i];
+            angles_out[10 + i] = (float) angles[i];
         }
 
-        angles[8] = -1.0F;
-        angles[10] = 1.0F;
+        angles_out[9] = 0.0F;
 
-        return angles;
+        return angles_out;
     }
 
     @Override
@@ -102,6 +113,7 @@ public class DefaultDriver extends AbstractDriver {
         if (action == null) {
             action = new Action();
         }
+        sensorModel = sensors;
         double normalized = (sensors.getTrackPosition() + 0) / 1;
         double[] sens_arr = new double[]{
                 normalized,
@@ -157,7 +169,7 @@ public class DefaultDriver extends AbstractDriver {
             if (sensors.getLaps() > 1) {
                 first = !first;
             }
-            System.out.println("Advice: " + moveTo);
+//            System.out.println("Advice: " + moveTo);
 
 
             moveTo = moveTo - first_corr;
@@ -176,19 +188,20 @@ public class DefaultDriver extends AbstractDriver {
                 }
             }
 
-            System.out.println("Advice: " + moveTo);
+//            System.out.println("Advice: " + moveTo);
 
             // param 1
-            if (moveTo > 1.0F) {
-                moveTo = 1.0F;
-            } else if (moveTo < -1.0F) {
-                moveTo = -1.0F;
+            float floaty = 0.75F;
+            if (moveTo > floaty) {
+                moveTo = floaty;
+            } else if (moveTo < -floaty) {
+                moveTo = -floaty;
             }
 
         }
 
-        System.out.println(sensors.getTrackPosition());
-        System.out.println(moveTo);
+//        System.out.println(sensors.getTrackPosition());
+//        System.out.println(moveTo);
 
         // 5:26 sigmoid
 
@@ -197,14 +210,14 @@ public class DefaultDriver extends AbstractDriver {
             action.steering += DriversUtils.moveTowardsTrackPosition(sensors, 0.5, -sensors.getTrackPosition());
         }else{
             // param 2
-            action.steering = DriversUtils.alignToTrackAxis(sensors, 0.1);
-            action.steering += DriversUtils.moveTowardsTrackPosition(sensors, 0.1, moveTo);
+            action.steering = DriversUtils.alignToTrackAxis(sensors, 0.25);
+            action.steering += DriversUtils.moveTowardsTrackPosition(sensors, 0.25, moveTo);
         }
 
         // param 3
-        if (action.steering < 0.02F && action.steering > -0.02F) {
+        if (action.steering < 0.025F && action.steering > -0.025F) {
             action.steering = 0.0F;
-        } else if (action.steering < 0.1F && action.steering > -0.1F) {
+        } else if (action.steering < 0.15F && action.steering > -0.15F) {
             action.steering = action.steering / 2.0F;
         }
 
@@ -249,7 +262,7 @@ public class DefaultDriver extends AbstractDriver {
                 if (learning && !loaded) {
                     targetSpeed = 230.0F;
                 } else {
-                    targetSpeed = 180.0F;
+                    targetSpeed = 210.0F;
                 }
                 double opp0 = sensors.getOpponentSensors()[16];
                 double opp1 = sensors.getOpponentSensors()[17];
@@ -283,13 +296,13 @@ public class DefaultDriver extends AbstractDriver {
         }
 
 
-        System.out.println("--------------" + getDriverName() + "--------------");
-        System.out.println("Steering: " + action.steering);
-        System.out.println("Acceleration: " + action.accelerate);
-        System.out.println("Brake: " + action.brake);
-        System.out.println("Angle: " + sensors.getAngleToTrackAxis());
-        System.out.println("Distance: " + sensors.getTrackPosition());
-        System.out.println("-----------------------------------------------");
+//        System.out.println("--------------" + getDriverName() + "--------------");
+//        System.out.println("Steering: " + action.steering);
+//        System.out.println("Acceleration: " + action.accelerate);
+//        System.out.println("Brake: " + action.brake);
+//        System.out.println("Angle: " + sensors.getAngleToTrackAxis());
+//        System.out.println("Distance: " + sensors.getTrackPosition());
+//        System.out.println("-----------------------------------------------");
         return action;
     }
 }
