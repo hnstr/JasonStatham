@@ -10,9 +10,6 @@ public class DefaultDriverGenome implements IGenome {
     private static final double MUTATION_RATE = 0.2;
     private ArrayList<double[]> population = new ArrayList<>();
     private static final int POPULATION_SIZE = 10;
-    private int fastest = 0;
-    private int second = 0;
-    private ArrayList<Integer> ranking = new ArrayList<>();
 
     DefaultDriverGenome() {
 
@@ -81,72 +78,84 @@ public class DefaultDriverGenome implements IGenome {
         return population;
     }
 
-    /*
-        Cut the 5 slowest individuals from the list.
-     */
-    public void selectFittest(ArrayList<Double> times) {
+//    /*
+//        Cut the 5 slowest individuals from the list.
+//     */
+//    public void selectFittest(ArrayList<Double> times) {
+//
+//        // clear list for new use
+//        ranking.clear();
+//
+//        int fastest = 0;
+//        int second = 0;
+//        int third = 0;
+//        int fourth = 0;
+//        int fifth = 0;
+//
+//        // initialise index list for the five best individuals
+//        ranking.addAll(Arrays.asList(fastest, second, third, fourth, fifth));
+//
+//        // select the five best times and their indices
+//        for (int i = 0; i < ranking.size(); i++) {
+//            int max = times.indexOf(Collections.max(times));
+//            ranking.set(i, max);
+//            times.set(max, 0.0);
+//        }
+//
+//        // remove the worst five from the population
+//        for (int j = 0; j < population.size(); j++) {
+//            if (!ranking.contains(j)) {
+//                population.set(j, null);
+//            }
+//        }
+//
+//    }
 
-        // clear list for new use
-        ranking.clear();
+    public void sort(ArrayList<Double> times) {
+        boolean sorted = true;
+        while (sorted) {
+            sorted = false;
 
-        int third = 0;
-        int fourth = 0;
-        int fifth = 0;
+            for (int i = 0; i < times.size() - 1; i++) {
+                int j = i + 1;
+                if (times.get(i) > times.get(j)) {
+                    double temp = times.get(i);
+                    times.set(i, times.get(j));
+                    times.set(j, temp);
 
-        // initialise index list for the five best individuals
-        ranking.addAll(Arrays.asList(fastest, second, third, fourth, fifth));
-
-        // select the five best times and their indices
-        for (int i = 0; i < ranking.size(); i++) {
-            int max = times.indexOf(Collections.max(times));
-            ranking.set(i, max);
-            times.set(max, 0.0);
-        }
-
-        // remove the worst five from the population
-        for (int j = 0; j < population.size(); j++) {
-            if (!ranking.contains(j)) {
-                population.set(j, null);
+                    double[] temp2 = population.get(i);
+                    population.set(i, population.get(j));
+                    population.set(j, temp2);
+                    sorted = true;
+                }
             }
         }
-
     }
 
     /*
         Repopulate the list with pseudo random babies.
      */
     public void repopulate() {
+        ArrayList<Integer> ranking = new ArrayList<>();
 
-        fastest = ranking.get(0);
-        second = ranking.get(1);
+        for (int i = 0; i < 5; i++) {
+            population.remove(5);
+        }
 
-        // do not mate with the first and last individual
-        ranking.remove(0);
-        ranking.remove(ranking.size() - 1);
-
+        // initialise index list for the five best individuals
+        ranking.addAll(Arrays.asList(1, 2, 3));
 
         // make three babies with the fastest individual
         for (Integer aRanking : ranking) {
-            population.add(mate(population.get(fastest), population.get(aRanking)));
+            population.add(mate(population.get(0), population.get(aRanking)));
         }
 
         ranking.remove(0);
 
         // make two babies with the second fastest individual
         for (Integer aRanking : ranking) {
-            population.add(mate(population.get(second), population.get(aRanking)));
+            population.add(mate(population.get(1), population.get(aRanking)));
         }
-
-        // remove old individuals from the population
-        ArrayList<double[]> newPopulation = new ArrayList<>();
-
-        for (int i = 0; i < population.size(); i++) {
-            if (population.get(i) != null) {
-                newPopulation.add(population.get(i));
-            }
-        }
-
-        population = newPopulation;
     }
 
 }

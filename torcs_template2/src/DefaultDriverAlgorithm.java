@@ -83,9 +83,8 @@ public class DefaultDriverAlgorithm extends AbstractAlgorithm {
 
         DefaultDriverAlgorithm algorithm = new DefaultDriverAlgorithm();
 
-        ArrayList<Double> times = new ArrayList<>();
-
         while (true) {
+            ArrayList<Double> times = new ArrayList<>();
             population = driverGenome.getPopulation();
 
             for (int j = 0; j < 10; j++) {
@@ -97,7 +96,7 @@ public class DefaultDriverAlgorithm extends AbstractAlgorithm {
                 double laptime = algorithm.getLaptime(driver);
                 times.add(laptime);
             }
-            driverGenome.selectFittest(times);
+            driverGenome.sort(times);
             driverGenome.repopulate();
         }
 
@@ -115,7 +114,7 @@ public class DefaultDriverAlgorithm extends AbstractAlgorithm {
         // race specifications
         DefaultRace race = new DefaultRace();
         race.setTrack("forza", "road");
-        race.laps = 5;
+        race.laps = 2;
 
         // navigate to the right folder to start torcs
         try {
@@ -132,7 +131,7 @@ public class DefaultDriverAlgorithm extends AbstractAlgorithm {
         // run a race
         results = race.runRace(drivers, false, true);
 
-        System.out.println(drivers[0].getLapTime());
+        System.out.println(drivers[0].getTotTime());
 
         return drivers[0].getLapTime();
     }
