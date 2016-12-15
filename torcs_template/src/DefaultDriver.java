@@ -15,18 +15,29 @@ import java.util.List;
 public class DefaultDriver extends AbstractDriver {
 
     private NeuralNet neuralNetwork;
-    List<double[]> sensor_data = new ArrayList<>();
-    List<double[]> track_data = new ArrayList<>();
-    boolean loaded = false;
-    boolean learning = true;
+    private List<double[]> sensor_data = new ArrayList<>();
+    private List<double[]> track_data = new ArrayList<>();
+    private boolean loaded = false;
+    private boolean learning = true;
+    private DefaultDriverGenome genome = new DefaultDriverGenome();
+    private double[] angles;
+    private static boolean GENETICS = false;
+    SensorModel sensorModel;
 
-    public DefaultDriver() {
+    public DefaultDriver(double[] individual) {
+
+        angles = individual;
+
         initialize();
-        neuralNetwork = new NeuralNet(21, 4, 2);
+        neuralNetwork = new NeuralNet(20, 4, 1);
         if (!learning) {
             neuralNetwork = neuralNetwork.loadGenome();
         }
 
+    }
+
+    double getLapTime() {
+        return sensorModel.getLastLapTime();
     }
 
     private void initialize() {
@@ -83,16 +94,16 @@ public class DefaultDriver extends AbstractDriver {
 
     @Override
     public float[] initAngles() {
-        float[] angles = new float[19];
+        float[] angles_out = new float[19];
 
-        for(int i = 0; i < 19; ++i) {
-            angles[i] = (float)(-90 + i * 10);
+        for(int i = 0; i < 9; i++) {
+            angles_out[8 - i] = -(float) angles[i];
+            angles_out[10 + i] = (float) angles[i];
         }
 
-        angles[8] = -1.0F;
-        angles[10] = 1.0F;
+        angles_out[9] = 0.0F;
 
-        return angles;
+        return angles_out;
     }
 
     @Override
